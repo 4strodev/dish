@@ -18,6 +18,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         stdin.read_line(&mut input)?;
 
+        if input.trim_end() == "exit" {
+            break Ok(());
+        }
+
         let mut lexer = Lexer::new(input.trim_end());
         let mut parser = Parser::new(&mut lexer);
 
