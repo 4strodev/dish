@@ -14,14 +14,14 @@ pub enum Expr {
 }
 
 impl Expr {
-    pub fn value(&self) -> f64 {
+    pub fn eval(&self) -> f64 {
         match self {
             Self::Number(value) => *value,
             Self::BinaryOp { left, op, right } => match op {
-                Op::Plus => left.value() + right.value(),
-                Op::Minus => left.value() - right.value(),
-                Op::Star => left.value() * right.value(),
-                Op::Slash => left.value() / right.value(),
+                Op::Plus => left.eval() + right.eval(),
+                Op::Minus => left.eval() - right.eval(),
+                Op::Star => left.eval() * right.eval(),
+                Op::Slash => left.eval() / right.eval(),
             },
         }
     }
