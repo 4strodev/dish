@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::ast::{
     lexer::Lexer,
     token::{Op, Token},
@@ -27,19 +29,39 @@ impl Expr {
     }
 }
 
+impl Display for Expr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        return match self {
+            Expr::Number(n) => write!(f, "{}", n),
+            Expr::BinaryOp { left, op, right } => write!(f, "({} {} {})", op, left, right),
+        };
+    }
+}
+
 #[derive(Debug)]
-pub struct Parser<'a, T: AsRef<str>> {
-    lexer: &'a mut Lexer<T>,
+pub struct Parser<T: AsRef<str>> {
+    lexer: Lexer<T>,
     current_token: Token,
 }
 
-impl<'a, T: AsRef<str>> Parser<'a, T> {
-    pub fn new(lexer: &'a mut Lexer<T>) -> Self {
+impl<T: AsRef<str>> Parser<T> {
+    pub fn new(mut lexer: Lexer<T>) -> Self {
         let current_token = lexer.get_next_token();
         Parser {
             lexer,
             current_token,
         }
+    }
+
+    pub fn from(input: T) -> Parser<T> {
+        let lexer = Lexer::new(input);
+        return Parser::new(lexer);
+    }
+
+    pub fn reset(&mut self, input: T) {
+        let lexer = Lexer::new(input);
+        self.lexer = lexer;
+        self.current_token = self.lexer.get_next_token();
     }
 
     fn eat(&mut self, token: Token) {
@@ -51,10 +73,6 @@ impl<'a, T: AsRef<str>> Parser<'a, T> {
                 token, self.current_token
             );
         }
-    }
-    pub fn reset(&mut self, input: T) {
-        self.lexer.reset(input);
-        self.current_token = self.lexer.get_next_token();
     }
 
     fn factor(&mut self) -> Expr {

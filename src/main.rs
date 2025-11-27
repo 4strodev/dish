@@ -1,9 +1,6 @@
 use std::io::{self, BufRead, Write};
 
-use crate::ast::{lexer::Lexer, parser::Parser};
-
-mod ast;
-mod command_parser;
+use dish::ast::parser::Parser;
 
 const PROMPT: &str = "-> ";
 const INTERACTIVE: bool = false;
@@ -15,6 +12,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .and_then(|interactive| Some(interactive == "true"))
         .unwrap_or(INTERACTIVE);
 
+    let mut parser = Parser::from("".to_owned());
+
     if interactive {
         print!("{}", PROMPT);
         io::stdout().flush()?;
@@ -23,20 +22,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for line in io::stdin().lock().lines() {
         let input = line?;
 
-        if interactive {
-            print!("{}", PROMPT);
-            io::stdout().flush()?;
-        }
-
         if input.trim_end() == "exit" {
             return Ok(());
         }
 
-        let mut lexer = Lexer::new(input.trim_end());
-        let mut parser = Parser::new(&mut lexer);
+        parser.reset(input);
 
         let expr = parser.expr();
         println!("{}", expr.eval());
+        io::stdout().flush()?;
+
+        if interactive {
+            print!("{}", PROMPT);
+            io::stdout().flush()?;
+        }
     }
 
     return Ok(());
